@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Price Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Bitcoin Price Prediction</h1>
+        <p>This application predicts the Bitcoin price for the upcoming Friday and Month-End using a machine learning model.</p>
+        
+        <!-- Button to predict Friday's price -->
+        <button id="friday-btn" class="predict-btn">Predict Friday's Price</button>
+        <!-- Result will appear below the button -->
+        <div id="friday-result" class="result"></div>
+
+        <!-- Button to predict Month-End price -->
+        <button id="month-end-btn" class="predict-btn">Predict Month-End Price</button>
+        <!-- Result will appear below the button -->
+        <div id="month-end-result" class="result"></div>
+
+        <!-- Button to retrain the model -->
+        <button id="retrain-btn" class="predict-btn">Retrain Model</button>
+        <!-- Retrain status will appear here -->
+        <div id="retrain-status"></div>
+
+        <!-- Bitcoin Price Chart -->
+        <canvas id="btcChart"></canvas>
+    </div>
+
+    <script>
+        // Chart.js configuration for the Bitcoin price chart
+        const ctx = document.getElementById('btcChart').getContext('2d');
+        const btcChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ dates | safe }},
+                datasets: [{
+                    label: 'Bitcoin Price (USD)',
+                    data: {{ prices | safe }},
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Price (USD)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Handle the Friday prediction button click
+        document.getElementById('friday-btn').addEventListener('click', function() {
+            fetch('/predict', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Show the result for the Friday prediction
+                document.getElementById('friday-result').innerHTML = `
+                    <h2>Friday Prediction: $${data.friday_price.toFixed(2)} on ${data.friday_date}</h2>
+                `;
+            });
+        });
+
+        // Handle the Month-End prediction button click
+        document.getElementById('month-end-btn').addEventListener('click', function() {
+            fetch('/predict', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Show the result for the Month-End prediction
+                document.getElementById('month-end-result').innerHTML = `
+                    <h2>Month-End Prediction: $${data.month_end_price.toFixed(2)} on ${data.month_end_date}</h2>
+                `;
+            });
+        });
+
+        // Handle the Retrain Model button click
+        document.getElementById('retrain-btn').addEventListener('click', function() {
+            fetch('/retrain', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Show the retrain status
+                document.getElementById('retrain-status').innerHTML = `
+                    <h2>Status: ${data.status}</h2>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>
